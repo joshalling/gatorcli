@@ -1,14 +1,18 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
 	"github.com/joshalling/gatorcli/internal/config"
+	"github.com/joshalling/gatorcli/internal/database"
+	_ "github.com/lib/pq"
 )
 
 type state struct {
-	c *config.Config
+	db *database.Queries
+	c  *config.Config
 }
 
 type command struct {
@@ -27,8 +31,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	db, err := sql.Open("postgres", c.DbUrl)
+	if err != nil {
+		fmt.Printf("Error connecting to database: %v", err)
+		os.Exit(1)
+	}
+
+	dbQueries := database.New(db)
+
 	s := &state{
-		c: &c,
+		db: dbQueries,
+		c:  &c,
 	}
 
 	cmds := commands{handlers: make(map[string]func(*state, command) error)}
