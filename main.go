@@ -37,6 +37,7 @@ func main() {
 
 	cmds := commands{handlers: make(map[string]func(*state, command) error)}
 	cmds.register("login", handleLogin)
+	cmds.register("register", handleRegister)
 
 	args := os.Args[1:]
 
