@@ -13,8 +13,12 @@ func handleLogin(s *state, cmd command) error {
 	if len(cmd.args) != 1 {
 		return fmt.Errorf("the login command expects one argument: username")
 	}
+	user, err := s.db.GetUser(context.Background(), cmd.args[0])
+	if err != nil {
+		return err
+	}
 
-	err := s.c.SetUser(cmd.args[0])
+	err = s.c.SetUser(user.Name)
 	if err != nil {
 		return err
 	}
