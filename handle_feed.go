@@ -3,8 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/joshalling/gatorcli/internal/api"
+	"github.com/joshalling/gatorcli/internal/database"
 )
 
 func handleAgg(s *state, cmd command) error {
@@ -14,5 +17,37 @@ func handleAgg(s *state, cmd command) error {
 	}
 
 	fmt.Println(feed)
+	return nil
+}
+
+func handleCreateFeed(s *state, cmd command) error {
+	if len(cmd.args) != 2 {
+		return fmt.Errorf("the add feed command expects two arguments: name, url")
+	}
+
+	user, err := s.db.GetUser(context.Background(), s.c.UserName)
+	if err != nil {
+		return err
+	}
+
+	feed, err := s.db.CreateFeed(context.Background(), database.CreateFeedParams{
+		Name:      cmd.args[0],
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Url:       cmd.args[1],
+		UserID:    user.ID,
+	})
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Created feed %s\n", feed.Name)
+	fmt.Printf("Feed ID: %s\n", feed.ID)
+	fmt.Printf("Created at: %s\n", feed.CreatedAt)
+	fmt.Printf("Updated at: %s\n", feed.UpdatedAt)
+	fmt.Printf("URL: %s\n", feed.Url)
+	fmt.Printf("User ID: %s\n", feed.UserID)
+
 	return nil
 }
