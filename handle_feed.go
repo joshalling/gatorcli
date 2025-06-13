@@ -51,3 +51,15 @@ func handleCreateFeed(s *state, cmd command) error {
 
 	return nil
 }
+
+func handleFeeds(s *state, cmd command) error {
+	feeds, err := s.db.GetFeeds(context.Background())
+	if err != nil {
+		return err
+	}
+	for _, feed := range feeds {
+		fmt.Printf("%s | %s | %s\n", feed.Name, feed.Url, feed.Name_2)
+	}
+
+	return nil
+}

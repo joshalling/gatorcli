@@ -42,6 +42,7 @@ func main() {
 	cmds.register("users", handleList)
 	cmds.register("agg", handleAgg)
 	cmds.register("addfeed", handleCreateFeed)
+	cmds.register("feeds", handleFeeds)
 
 	args := os.Args[1:]
 
