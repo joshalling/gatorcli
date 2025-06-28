@@ -36,6 +36,30 @@ func handleFollow(s *state, cmd command, user database.User) error {
 	return nil
 }
 
+func handleUnfollow(s *state, cmd command, user database.User) error {
+	if len(cmd.args) != 1 {
+		return fmt.Errorf("the login command expects one argument: url")
+	}
+
+	feed, err := s.db.GetFeedByUrl(context.Background(), cmd.args[0])
+	if err != nil {
+		return err
+	}
+
+	err = s.db.DeleteFeedFollow(context.Background(), database.DeleteFeedFollowParams{
+		UserID: user.ID,
+		FeedID: feed.ID,
+	})
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Feed unfollowed: %s\n", feed.Name)
+	fmt.Printf("User: %s\n", user.Name)
+
+	return nil
+}
+
 func handleFeedFollows(s *state, cmd command, user database.User) error {
 	feed_follows, err := s.db.GetFeedFollows(context.Background(), user.ID)
 	if err != nil {
