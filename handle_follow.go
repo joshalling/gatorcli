@@ -9,14 +9,9 @@ import (
 	"github.com/joshalling/gatorcli/internal/database"
 )
 
-func handleFollow(s *state, cmd command) error {
+func handleFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 1 {
 		return fmt.Errorf("the login command expects one argument: url")
-	}
-
-	user, err := s.db.GetUser(context.Background(), s.c.UserName)
-	if err != nil {
-		return err
 	}
 
 	feed, err := s.db.GetFeedByUrl(context.Background(), cmd.args[0])
@@ -41,12 +36,7 @@ func handleFollow(s *state, cmd command) error {
 	return nil
 }
 
-func handleFeedFollows(s *state, cmd command) error {
-	user, err := s.db.GetUser(context.Background(), s.c.UserName)
-	if err != nil {
-		return err
-	}
-
+func handleFeedFollows(s *state, cmd command, user database.User) error {
 	feed_follows, err := s.db.GetFeedFollows(context.Background(), user.ID)
 	if err != nil {
 		return err

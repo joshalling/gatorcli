@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"os"
@@ -41,10 +42,10 @@ func main() {
 	cmds.register("reset", handleReset)
 	cmds.register("users", handleList)
 	cmds.register("agg", handleAgg)
-	cmds.register("addfeed", handleCreateFeed)
+	cmds.register("addfeed", middlewareLoggedIn(handleCreateFeed))
 	cmds.register("feeds", handleFeeds)
-	cmds.register("follow", handleFollow)
-	cmds.register("following", handleFeedFollows)
+	cmds.register("follow", middlewareLoggedIn(handleFollow))
+	cmds.register("following", middlewareLoggedIn(handleFeedFollows))
 
 	args := os.Args[1:]
 
@@ -57,5 +58,16 @@ func main() {
 	if err != nil {
 		fmt.Printf("Error running command: %v\n", err)
 		os.Exit(1)
+	}
+}
+
+func middlewareLoggedIn(handler func(s *state, cmd command, user database.User) error) func(*state, command) error {
+	return func(s *state, cmd command) error {
+		user, err := s.db.GetUser(context.Background(), s.c.UserName)
+		if err != nil {
+			return err
+		}
+
+		return handler(s, cmd, user)
 	}
 }

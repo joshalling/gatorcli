@@ -20,14 +20,9 @@ func handleAgg(s *state, cmd command) error {
 	return nil
 }
 
-func handleCreateFeed(s *state, cmd command) error {
+func handleCreateFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 2 {
 		return fmt.Errorf("the add feed command expects two arguments: name, url")
-	}
-
-	user, err := s.db.GetUser(context.Background(), s.c.UserName)
-	if err != nil {
-		return err
 	}
 
 	feed, err := s.db.CreateFeed(context.Background(), database.CreateFeedParams{
