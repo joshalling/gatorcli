@@ -11,12 +11,23 @@ import (
 )
 
 func handleAgg(s *state, cmd command) error {
-	feed, err := api.FetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
+	if len(cmd.args) != 1 {
+		return fmt.Errorf("the agg command expects one arguments: time_between_reqs")
+	}
+	timeBetweenReqs, err := time.ParseDuration(cmd.args[0])
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(feed)
+	ticker := time.NewTicker(timeBetweenReqs)
+	for range ticker.C {
+		fmt.Println("========")
+		fmt.Println("Scraping feeds...")
+		fmt.Println("========")
+		scrapeFeeds(s)
+		fmt.Println("========")
+		fmt.Println("Ending scrape...")
+		fmt.Println("========")
+	}
 	return nil
 }
 
@@ -65,6 +76,29 @@ func handleFeeds(s *state, cmd command) error {
 	}
 	for _, feed := range feeds {
 		fmt.Printf("%s | %s | %s\n", feed.Name, feed.Url, feed.Name_2)
+	}
+
+	return nil
+}
+
+func scrapeFeeds(s *state) error {
+	feed, err := s.db.GetNextFeedToFetch(context.Background())
+	if err != nil {
+		return err
+	}
+
+	rssFeed, err := api.FetchFeed(context.Background(), feed.Url)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.MarkFeedFetched(context.Background(), feed.ID)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range rssFeed.Channel.Items {
+		fmt.Println(item.Title)
 	}
 
 	return nil
